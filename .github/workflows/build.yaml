@@ -8,6 +8,16 @@ permissions:
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 jobs:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '1.20'
+    - run: |
+        go mod tidy
+        go test github.com/$GITHUB_REPOSITORY/core
   BuildExe:
     runs-on: windows-latest
     steps:
