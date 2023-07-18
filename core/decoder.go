@@ -14,9 +14,9 @@ import (
 
 type Decoder struct {
 	Iter int
-	Bias int
 	Hold int
 	Miss int
+	Bias int
 	Gain float64
 	Mute float64
 	STFT *stft.STFT
@@ -33,19 +33,25 @@ func (d *Decoder) decode(signal []float64) (result Message) {
 		key[idx] = val * math.Min(d.Gain, max/val)
 	}
 	gmm1 := &classes{X: key}
-	gmm1.optimize(d.Iter)
-	seq := gmm1.segments(0)
-	tones := make([]float64, 0)
-	for _, s := range seq {
-		if s.down {
-			tones = append(tones, s.span)
+	gmm2 := &classes{X: key}
+	gmm1.train(1, d.Iter)
+	gmm2.train(2, d.Iter)
+	like1 := gmm1.computeBIC()
+	like2 := gmm2.computeBIC()
+	if like1 > like2 {
+		seq := gmm2.segments(0)
+		tones := make([]float64, 0)
+		for _, s := range seq {
+			if s.down {
+				tones = append(tones, s.span)
+			}
 		}
+		gmm3 := &classes{X: tones}
+		gmm3.train(2, d.Iter)
+		result.Code = gmm3.code(seq)
+		result.Time = d.time
 	}
-	gmm2 := &classes{X: tones}
-	gmm2.optimize(d.Iter)
 	result.Data = signal
-	result.Code = gmm2.code(seq)
-	result.Time = d.time
 	return
 }
 
@@ -76,13 +82,13 @@ func (d *Decoder) search(series [][]float64) (result []int) {
 
 func (d *Decoder) scan(signal []float64) (result []Message) {
 	spec, _ := gossp.SplitSpectrogram(d.STFT.STFT(signal))
-	for _, idx := range d.search(spec) {
+	for _, f := range d.search(spec) {
 		wave := make([]float64, len(spec))
-		for t, s := range spec {
-			wave[t] = s[idx]
+		for t, sp := range spec {
+			wave[t] = sp[f]
 		}
 		next := d.decode(wave)
-		next.Freq = idx
+		next.Freq = f
 		result = append(result, next)
 	}
 	d.Spec = spec
@@ -124,10 +130,10 @@ func (d *Decoder) Read(signal []float64) (result []Message) {
 func DefaultDecoder(SamplingRateInHz int) (decoder Decoder) {
 	return Decoder{
 		Iter: 5,
-		Bias: 5,
 		Miss: 2,
+		Bias: 10,
 		Gain: 2,
-		Mute: 0.2,
+		Mute: 0.1,
 		Hold: SamplingRateInHz * 5,
 		STFT: stft.New(SamplingRateInHz/100, 2048),
 	}

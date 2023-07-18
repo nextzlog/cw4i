@@ -7,7 +7,6 @@ package core
 
 import (
 	_ "embed"
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"strings"
 )
@@ -29,7 +28,7 @@ func CodeToText(code string) (result string) {
 		if val, ok := reverse[s]; ok {
 			result += string(val)
 		} else {
-			result += fmt.Sprintf("[%s]", s)
+			result += "?"
 		}
 	}
 	return
