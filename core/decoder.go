@@ -12,11 +12,6 @@ import (
 	"sort"
 )
 
-const (
-	edge_step = 10
-	edge_damp = 10
-)
-
 type Decoder struct {
 	Iter int
 	Bias int
@@ -79,24 +74,8 @@ func (d *Decoder) search(series [][]float64) (result []int) {
 	return
 }
 
-func (d *Decoder) edge(signal []float64) (spec [][]float64) {
-	spec, _ = gossp.SplitSpectrogram(d.STFT.STFT(signal))
-	state := make([]float64, d.STFT.FrameLen)
-	for n := 0; n < edge_step; n++ {
-		for _, sp := range spec {
-			copy(state, sp)
-			for k, v := range sp[1 : len(sp)-1] {
-				if state[k] > v || state[k+2] > v {
-					sp[k+1] /= edge_damp
-				}
-			}
-		}
-	}
-	return
-}
-
 func (d *Decoder) scan(signal []float64) (result []Message) {
-	spec := d.edge(signal)
+	spec, _ := gossp.SplitSpectrogram(d.STFT.STFT(signal))
 	for _, idx := range d.search(spec) {
 		wave := make([]float64, len(spec))
 		for t, s := range spec {
