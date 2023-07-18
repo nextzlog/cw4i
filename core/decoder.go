@@ -17,14 +17,6 @@ const (
 	edge_damp = 10
 )
 
-type Message struct {
-	Data []float64
-	Code string
-	Freq int
-	Time int
-	Miss int
-}
-
 type Decoder struct {
 	Iter int
 	Bias int
@@ -39,42 +31,25 @@ type Decoder struct {
 	time int
 }
 
-func (d *Decoder) binary(signal []float64) (result []*step) {
+func (d *Decoder) decode(signal []float64) (result Message) {
 	key := make([]float64, len(signal))
 	max := max64(signal)
 	for idx, val := range signal {
 		key[idx] = val * math.Min(d.Gain, max/val)
 	}
-	gmm := means{X: key}
-	gmm.optimize(d.Iter)
-	result = gmm.steps()
-	return
-}
-
-func (d *Decoder) detect(signal []float64) (result Message) {
-	result.Data = make([]float64, len(signal))
-	copy(result.Data, signal)
-	steps := d.binary(signal)
+	gmm1 := &classes{X: key}
+	gmm1.optimize(d.Iter)
+	seq := gmm1.segments(0)
 	tones := make([]float64, 0)
-	if len(steps) >= 1 {
-		for idx, s := range steps[1:] {
-			s.span = float64(s.time - steps[idx].time)
-			if s.down {
-				tones = append(tones, s.span)
-			}
+	for _, s := range seq {
+		if s.down {
+			tones = append(tones, s.span)
 		}
 	}
-	if len(tones) >= 1 {
-		gmm := &means{X: tones}
-		gmm.optimize(d.Iter)
-		for _, s := range steps[1:] {
-			if s.down {
-				result.Code += s.tone(gmm.class(s.span))
-			} else {
-				result.Code += s.mute(gmm.extra(s.span))
-			}
-		}
-	}
+	gmm2 := &classes{X: tones}
+	gmm2.optimize(d.Iter)
+	result.Data = signal
+	result.Code = gmm2.code(seq)
 	result.Time = d.time
 	return
 }
@@ -122,12 +97,12 @@ func (d *Decoder) edge(signal []float64) (spec [][]float64) {
 
 func (d *Decoder) scan(signal []float64) (result []Message) {
 	spec := d.edge(signal)
-	wave := make([]float64, len(spec))
 	for _, idx := range d.search(spec) {
+		wave := make([]float64, len(spec))
 		for t, s := range spec {
 			wave[t] = s[idx]
 		}
-		next := d.detect(wave)
+		next := d.decode(wave)
 		next.Freq = idx
 		result = append(result, next)
 	}
@@ -146,7 +121,7 @@ func (d *Decoder) Read(signal []float64) (result []Message) {
 			if next.Freq == prev.Freq {
 				drop := len(next.Data) - (len(signal) / shift)
 				data := append(prev.Data, next.Data[drop:]...)
-				next = d.detect(data)
+				next = d.decode(data)
 				next.Freq = prev.Freq
 				next.Time = prev.Time
 				if next.Code == prev.Code {

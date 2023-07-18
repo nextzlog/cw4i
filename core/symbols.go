@@ -6,23 +6,21 @@
 package core
 
 import (
-	"bufio"
 	_ "embed"
+	"fmt"
+	"gopkg.in/yaml.v2"
 	"strings"
 )
 
-//go:embed latin.dat
-var morse string
-var reverse = make(map[string]rune)
-var forward = make(map[rune]string)
+//go:embed latin.yaml
+var latin string
+var reverse = make(map[string]string)
+var forward = make(map[string]string)
 
 func init() {
-	reader := strings.NewReader(morse)
-	stream := bufio.NewScanner(reader)
-	for stream.Scan() {
-		val := stream.Text()
-		reverse[val[1:]] = rune(val[0])
-		forward[rune(val[0])] = val[1:]
+	yaml.UnmarshalStrict([]byte(latin), &forward)
+	for key, value := range forward {
+		reverse[value] = key
 	}
 }
 
@@ -31,14 +29,14 @@ func CodeToText(code string) (result string) {
 		if val, ok := reverse[s]; ok {
 			result += string(val)
 		} else {
-			result += "?"
+			result += fmt.Sprintf("[%s]", s)
 		}
 	}
 	return
 }
 
 func TextToCode(text string) (result string) {
-	for _, s := range text {
+	for _, s := range strings.Split(text, "") {
 		result += " " + forward[s]
 	}
 	if result != "" {
