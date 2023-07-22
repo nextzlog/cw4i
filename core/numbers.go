@@ -5,6 +5,8 @@
 *******************************************************************************/
 package core
 
+import "sort"
+
 func min64(x []float64) (min float64) {
 	for n, v := range x {
 		if n == 0 || v < min {
@@ -23,6 +25,13 @@ func max64(x []float64) (max float64) {
 	return
 }
 
+func med64(x []float64) (med float64) {
+	xs := make([]float64, len(x))
+	copy(xs, x)
+	sort.Float64s(xs)
+	return xs[len(xs)/2]
+}
+
 func sum64(x []float64) (sum float64) {
 	for _, v := range x {
 		sum += v
@@ -30,15 +39,21 @@ func sum64(x []float64) (sum float64) {
 	return
 }
 
+func pow64(x []float64) (pow float64) {
+	for _, v := range x {
+		pow += v * v
+	}
+	pow /= float64(len(x))
+	return
+}
+
 func top64(x []float64) (index []int) {
-	top := 0.0
-	pos := 0
-	for n, v := range x {
-		if v > top {
-			top = v
-			pos = n
-		} else if v < top {
-			index = append(index, pos)
+	for k := 1; k < len(x)-1; k++ {
+		v := x[k]
+		p := x[k-1]
+		n := x[k+1]
+		if p < v && v > n {
+			index = append(index, k)
 		}
 	}
 	return

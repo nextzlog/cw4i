@@ -12,7 +12,8 @@ const (
 	TEXT = "CQ DE JA1ZLO"
 )
 
-func TestEnDe(t *testing.T) {
+func Test(t *testing.T) {
+	failure := true
 	encoder := Encoder{
 		Freq: 600,
 		WPMs: 10,
@@ -21,11 +22,11 @@ func TestEnDe(t *testing.T) {
 	decoder := DefaultDecoder(RATE)
 	tone := encoder.Tone(TextToCode(TEXT))
 	for _, msg := range decoder.Read(tone) {
-		if CodeToText(msg.Code) != TEXT {
-			t.Errorf("%s != %s", msg.Code, TEXT)
-		} else {
-			return
+		if CodeToText(msg.Code) == TEXT {
+			failure = false
 		}
 	}
-	t.Error("no text decoded successfully")
+	if failure {
+		t.Error("no text decoded successfully")
+	}
 }

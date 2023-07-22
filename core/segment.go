@@ -6,39 +6,45 @@
 package core
 
 type Segment struct {
-	time int
-	down bool
-	span float64
+	Time int
+	Prev int
+	Down bool
+	Span float64
 }
 
-func (m *classes) segments(first int) (result []Segment) {
+func (m *Classes) Segments(first int) (result []Segment) {
 	start := 0
 	for n, x := range m.X {
-		k := m.class(x)
+		k := m.Class(x)
 		if first != k {
 			result = append(result, Segment{
-				time: n,
-				down: k == 0,
-				span: float64(n - start),
+				Time: n,
+				Prev: start,
+				Down: k == 0,
+				Span: float64(n - start),
 			})
 			start = n
 		}
 		first = k
 	}
-	return result[1:]
+	if len(result) > 1 {
+		return result[1:]
+	} else {
+		return nil
+	}
 }
 
-func (m *classes) code(segments []Segment) (code string) {
+func (m *Classes) Code(segments []Segment) (code string) {
 	for _, s := range segments {
-		if s.down {
-			switch m.class(s.span) {
+		if s.Down {
+			switch m.Class(s.Span) {
 			case 0:
 				code += "."
 			case 1:
 				code += "_"
 			}
 		} else {
-			switch m.extra(s.span) {
+			switch m.Extra(s.Span) {
 			case 0:
 				code += ""
 			case 1:
