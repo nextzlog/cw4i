@@ -3,7 +3,7 @@
  * Released under the MIT License (or GPL v3 until 2021 Oct 28th) (see LICENSE)
  * Univ. Tokyo Amateur Radio Club Development Task Force (https://nextzlog.dev)
 *******************************************************************************/
-package core
+package morse
 
 import (
 	_ "embed"
