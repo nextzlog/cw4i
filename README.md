@@ -7,6 +7,19 @@ CW4ISR
 
 CW4ISR is a highly programmable Morse Decoder that assists automated amateur radio operations.
 
+## Install
+
+```sh
+$ go install github.com/nextzlog/CW4I@HEAD
+$ cw4i
+```
+
+## Build
+
+```sh
+$ go build
+```
+
 ## Contribution
 
 Feel free to make issues at [nextzlog/todo](https://github.com/nextzlog/todo).
