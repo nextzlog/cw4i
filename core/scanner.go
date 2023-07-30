@@ -41,6 +41,7 @@ func (s *Scanner) Scan(source Message) Message {
 	speed := &Classes{X: tones}
 	speed.Train(2, s.Iter)
 	source.Code = speed.Code(steps)
+	source.Text = CodeToText(source.Code)
 	source.Tone = max64(level.M)
 	source.Mute = min64(level.M)
 	return source

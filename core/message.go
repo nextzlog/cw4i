@@ -11,11 +11,16 @@ import "math"
 type Message struct {
 	Data []float64
 	Code string
+	Text string
 	Freq int
 	Time int
 	Miss int
 	Tone float64
 	Mute float64
+}
+
+func (m Message) Distinct(thre float64) bool {
+	return m.Tone/m.Mute > thre
 }
 
 func (m Message) AGC(gain float64) []float64 {

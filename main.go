@@ -113,7 +113,7 @@ func (h *History) Component() (view *widget.List) {
 		func(id int, obj fyne.CanvasObject) {
 			item := h.Items[len(h.Items)-id-1]
 			label := obj.(*widget.Label)
-			label.SetText(core.CodeToText(item.Code))
+			label.SetText(item.Text)
 		},
 	)
 	h.views = append(h.views, view)
