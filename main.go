@@ -15,7 +15,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/gen2brain/malgo"
-	"github.com/nextzlog/CW4I/core"
+	"github.com/nextzlog/cw4i/core"
 	"net/url"
 )
 
