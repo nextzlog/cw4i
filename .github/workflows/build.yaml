@@ -18,7 +18,7 @@ jobs:
     - run: |
         go mod tidy
         go test
-      working-directory: core/morse
+      working-directory: core
   BuildExe:
     runs-on: windows-latest
     steps:

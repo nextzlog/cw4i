@@ -15,7 +15,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/gen2brain/malgo"
-	"github.com/nextzlog/CW4I/core/morse"
+	"github.com/nextzlog/CW4I/core"
 	"net/url"
 )
 
@@ -45,7 +45,7 @@ func main() {
 type Capture struct {
 	Context malgo.Context
 	Capture *malgo.Device
-	Handler func([]morse.Message)
+	Handler func([]core.Message)
 }
 
 func (c *Capture) Run(dev malgo.DeviceInfo) (err error) {
@@ -54,14 +54,14 @@ func (c *Capture) Run(dev malgo.DeviceInfo) (err error) {
 	cfg.Capture.Format = malgo.FormatS32
 	cfg.Capture.DeviceID = dev.ID.Pointer()
 	cfg.Capture.Channels = 1
-	var de morse.Decoder
+	var de core.Decoder
 	cb := malgo.DeviceCallbacks{
 		Data: func(out, in []byte, size uint32) {
 			c.Handler(de.Read(c.s32(in, size)))
 		},
 	}
 	c.Capture, _ = malgo.InitDevice(c.Context, cfg, cb)
-	de = morse.DefaultDecoder(int(c.Capture.SampleRate()))
+	de = core.DefaultDecoder(int(c.Capture.SampleRate()))
 	c.Capture.Start()
 	return
 }
@@ -98,7 +98,7 @@ func (c *Capture) Component() (view *widget.Select) {
 }
 
 type History struct {
-	Items []morse.Message
+	Items []core.Message
 	views []*widget.List
 }
 
@@ -113,14 +113,14 @@ func (h *History) Component() (view *widget.List) {
 		func(id int, obj fyne.CanvasObject) {
 			item := h.Items[len(h.Items)-id-1]
 			label := obj.(*widget.Label)
-			label.SetText(morse.CodeToText(item.Code))
+			label.SetText(core.CodeToText(item.Code))
 		},
 	)
 	h.views = append(h.views, view)
 	return
 }
 
-func (h *History) Add(list []morse.Message) {
+func (h *History) Add(list []core.Message) {
 	for _, next := range list {
 		lonely := true
 		for n, prev := range h.Items {
