@@ -14,6 +14,24 @@ $ go install github.com/nextzlog/CW4I@HEAD
 $ cw4i
 ```
 
+## Event Handler
+
+CW4ISR can be customized with JavaScript (ES5).
+Place `cw4i.js` as follows to define an event handler which accepts and returns `message`:
+
+```js:cw4i.js
+function handler(message) {
+  message.Text = message.Text.replace('5NN', '599');
+  message.Text = message.Text.replace('ENN', '599');
+  return message;
+}
+
+handler;
+```
+
+The function will be invoked every time CW4ISR updates the messages.
+Each message is an instance of `Message` structure, whose methods can also be called.
+
 ## Build
 
 ```sh

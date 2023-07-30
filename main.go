@@ -61,7 +61,7 @@ func (c *Capture) Run(dev malgo.DeviceInfo) (err error) {
 		},
 	}
 	c.Capture, _ = malgo.InitDevice(c.Context, cfg, cb)
-	de = core.DefaultDecoder(int(c.Capture.SampleRate()))
+	de, err = core.Program(int(c.Capture.SampleRate()))
 	c.Capture.Start()
 	return
 }
