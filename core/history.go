@@ -6,23 +6,28 @@
 
 package core
 
-import (
-	"errors"
-	"github.com/dop251/goja"
-	"os"
-)
-
-func ScriptPath() string {
-	return "cw4i.js"
+type History struct {
+	Items []Message
+	Added func()
 }
 
-func Program(rate int) (decoder Decoder, err error) {
-	decoder = DefaultDecoder(rate)
-	vm := goja.New()
-	code, e1 := os.ReadFile(ScriptPath())
-	fun, e2 := vm.RunString(string(code))
-	if err = errors.Join(e1, e2); err == nil {
-		err = vm.ExportTo(fun, &decoder.Program)
+func (h *History) Add(items []Message) {
+	for _, message := range items {
+		h.add(message)
 	}
-	return
+	if h.Added != nil {
+		h.Added()
+	}
+}
+
+func (h *History) add(message Message) {
+	for n, prev := range h.Items {
+		time := prev.Time == message.Time
+		freq := prev.Freq == message.Freq
+		if time && freq {
+			h.Items[n] = message
+			return
+		}
+	}
+	h.Items = append(h.Items, message)
 }

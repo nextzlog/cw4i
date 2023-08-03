@@ -16,21 +16,17 @@ $ cw4i
 
 ## Event Handler
 
-CW4ISR can be customized with JavaScript (ES5).
-Place `cw4i.js` as follows to define an event handler which accepts and returns `message`:
+Place `cw4i.js` as follows to customize `core.Decoder` with JavaScript (ES5).
 
 ```js:cw4i.js
-function handler(message) {
+decoder.Program = function(message) {
   message.Text = message.Text.replace('5NN', '599');
   message.Text = message.Text.replace('ENN', '599');
   return message;
 }
-
-handler;
 ```
 
-The function will be invoked every time CW4ISR updates the messages.
-Each message is an instance of `Message` structure, whose methods can also be called.
+The `Program` function is invoked each time the decoder updates a message, which is an instance of the `Message` structure.
 
 ## Build
 

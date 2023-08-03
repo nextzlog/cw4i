@@ -7,22 +7,23 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/dop251/goja"
 	"github.com/gen2brain/malgo"
 	"github.com/nextzlog/cw4i/core"
+	"github.com/nextzlog/cw4i/util"
 	"net/url"
+	"os"
 )
-
-var cfg malgo.ContextConfig
 
 func main() {
 	app := app.New()
+	cfg := malgo.ContextConfig{}
 	app.Settings().SetTheme(theme.DarkTheme())
 	ctx, _ := malgo.InitContext(nil, cfg, nil)
 	win := app.NewWindow("CW4ISR Morse Decoder")
@@ -31,10 +32,11 @@ func main() {
 		Context: ctx.Context,
 		Handler: history.Add,
 	}
-	sel := capture.Component()
-	his := history.Component()
-	btm := LinkToZLOG()
-	out := container.NewBorder(sel, btm, nil, nil, his)
+	sel := capture.CanvasObject()
+	his := history.CanvasObject()
+	h, _ := url.Parse("https://use.zlog.org/downloads")
+	pro := widget.NewHyperlink("zLog Reiwa Edition", h)
+	out := container.NewBorder(sel, pro, nil, nil, his)
 	win.Resize(fyne.NewSize(640, 480))
 	win.SetContent(out)
 	win.ShowAndRun()
@@ -42,9 +44,22 @@ func main() {
 	return
 }
 
+func Script(rate int) (decoder core.Decoder, err error) {
+	decoder = core.DefaultDecoder(rate)
+	vm := goja.New()
+	vm.Set("plot", util.Plot)
+	vm.Set("decoder", decoder)
+	code, _ := os.ReadFile("cw4i.js")
+	if _, err = vm.RunString(string(code)); err == nil {
+		err = vm.ExportTo(vm.Get("decoder"), &decoder)
+	}
+	return
+}
+
 type Capture struct {
 	Context malgo.Context
 	Capture *malgo.Device
+	Decoder core.Decoder
 	Handler func([]core.Message)
 }
 
@@ -54,32 +69,26 @@ func (c *Capture) Run(dev malgo.DeviceInfo) (err error) {
 	cfg.Capture.Format = malgo.FormatS32
 	cfg.Capture.DeviceID = dev.ID.Pointer()
 	cfg.Capture.Channels = 1
-	var de core.Decoder
-	cb := malgo.DeviceCallbacks{
+	endian := binary.LittleEndian
+	dcb := malgo.DeviceCallbacks{
 		Data: func(out, in []byte, size uint32) {
-			c.Handler(de.Read(c.s32(in, size)))
+			signal := make([]float64, size)
+			for n := 0; n < len(in); n += 4 {
+				v := endian.Uint32(in[n : n+4])
+				signal[n/4] = float64(int32(v))
+			}
+			c.Handler(c.Decoder.Read(signal))
 		},
 	}
-	c.Capture, _ = malgo.InitDevice(c.Context, cfg, cb)
-	de, err = core.Program(int(c.Capture.SampleRate()))
+	c.Capture, _ = malgo.InitDevice(c.Context, cfg, dcb)
+	c.Decoder, err = Script(int(c.Capture.SampleRate()))
 	c.Capture.Start()
 	return
 }
 
-func (c *Capture) s32(in []byte, size uint32) []float64 {
-	buffer := bytes.NewReader(in)
-	signal := make([]float64, int(size))
-	int32s := make([]int32, len(signal))
-	binary.Read(buffer, binary.LittleEndian, int32s)
-	for n, v := range int32s {
-		signal[n] = float64(v)
-	}
-	return signal
-}
-
-func (c *Capture) Component() (view *widget.Select) {
+func (c *Capture) CanvasObject() (ui fyne.CanvasObject) {
 	devices, _ := c.Context.Devices(malgo.Capture)
-	view = widget.NewSelect(nil, func(name string) {
+	sel := widget.NewSelect(nil, func(name string) {
 		if c.Capture != nil {
 			c.Capture.Uninit()
 			c.Capture = nil
@@ -91,58 +100,34 @@ func (c *Capture) Component() (view *widget.Select) {
 		}
 	})
 	for _, dev := range devices {
-		view.Options = append(view.Options, dev.Name())
+		sel.Options = append(sel.Options, dev.Name())
 	}
-	view.SetSelectedIndex(0)
-	return
+	sel.SetSelectedIndex(0)
+	return sel
 }
 
 type History struct {
-	Items []core.Message
-	views []*widget.List
+	core.History
 }
 
-func (h *History) Component() (view *widget.List) {
-	view = widget.NewList(
-		func() int {
-			return len(h.Items)
-		},
-		func() fyne.CanvasObject {
-			return widget.NewLabel("")
-		},
-		func(id int, obj fyne.CanvasObject) {
-			item := h.Items[len(h.Items)-id-1]
-			label := obj.(*widget.Label)
-			label.SetText(item.Text)
-		},
-	)
-	h.views = append(h.views, view)
-	return
+func (h *History) length() int {
+	return len(h.Items)
 }
 
-func (h *History) Add(list []core.Message) {
-	for _, next := range list {
-		lonely := true
-		for n, prev := range h.Items {
-			time := next.Time == prev.Time
-			freq := next.Freq == prev.Freq
-			if time && freq {
-				h.Items[n] = next
-				lonely = false
-				break
-			}
-		}
-		if lonely {
-			h.Items = append(h.Items, next)
-		}
+func (h *History) canvas() fyne.CanvasObject {
+	return widget.NewLabel("")
+}
+
+func (h *History) update(id int, obj fyne.CanvasObject) {
+	item := h.Items[len(h.Items)-id-1]
+	label := obj.(*widget.Label)
+	label.SetText(item.Text)
+}
+
+func (h *History) CanvasObject() (ui fyne.CanvasObject) {
+	list := widget.NewList(h.length, h.canvas, h.update)
+	h.Added = func() {
+		list.Refresh()
 	}
-	for _, view := range h.views {
-		view.Refresh()
-	}
-}
-
-func LinkToZLOG() (view *widget.Hyperlink) {
-	ref, _ := url.Parse("https://use.zlog.org/downloads")
-	view = widget.NewHyperlink("Download zLog here", ref)
-	return
+	return list
 }
