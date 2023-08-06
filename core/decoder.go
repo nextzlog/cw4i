@@ -22,7 +22,6 @@ func DefaultDecoder(Rate int) Decoder {
 	return Decoder{
 		Scatter: 1,
 		MaxMiss: 2,
-		Squelch: 1e20,
 		Monitor: DefaultMonitor(Rate),
 		Scanner: DefaultScanner(),
 	}

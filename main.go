@@ -17,12 +17,21 @@ import (
 	"github.com/gen2brain/malgo"
 	"github.com/nextzlog/cw4i/core"
 	"github.com/nextzlog/cw4i/util"
-	"net/url"
+	"math"
 	"os"
 )
 
+const (
+	SQL_MIN = 1
+	SQL_MAX = 100
+)
+
+const (
+	SQL = "sql"
+)
+
 func main() {
-	app := app.New()
+	app := app.NewWithID("cw4i")
 	cfg := malgo.ContextConfig{}
 	app.Settings().SetTheme(theme.DarkTheme())
 	ctx, _ := malgo.InitContext(nil, cfg, nil)
@@ -32,15 +41,17 @@ func main() {
 		Context: ctx.Context,
 		Handler: history.Add,
 	}
+	sql := widget.NewSlider(SQL_MIN, SQL_MAX)
+	sql.OnChanged = capture.SetSquelch
+	sql.SetValue(app.Preferences().Float(SQL))
 	sel := capture.CanvasObject()
 	his := history.CanvasObject()
-	h, _ := url.Parse("https://use.zlog.org/downloads")
-	pro := widget.NewHyperlink("zLog Reiwa Edition", h)
-	out := container.NewBorder(sel, pro, nil, nil, his)
+	out := container.NewBorder(sel, sql, nil, nil, his)
 	win.Resize(fyne.NewSize(640, 480))
 	win.SetContent(out)
 	win.ShowAndRun()
 	ctx.Uninit()
+	app.Preferences().SetFloat(SQL, sql.Value)
 	return
 }
 
@@ -60,7 +71,13 @@ type Capture struct {
 	Context malgo.Context
 	Capture *malgo.Device
 	Decoder core.Decoder
+	Squelch float64
 	Handler func([]core.Message)
+}
+
+func (c *Capture) SetSquelch(level float64) {
+	c.Decoder.Squelch = math.Pow(10, level)
+	c.Squelch = level
 }
 
 func (c *Capture) Run(dev malgo.DeviceInfo) (err error) {
@@ -82,6 +99,7 @@ func (c *Capture) Run(dev malgo.DeviceInfo) (err error) {
 	}
 	c.Capture, _ = malgo.InitDevice(c.Context, cfg, dcb)
 	c.Decoder, err = Script(int(c.Capture.SampleRate()))
+	c.SetSquelch(c.Squelch)
 	c.Capture.Start()
 	return
 }
