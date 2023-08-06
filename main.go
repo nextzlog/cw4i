@@ -27,6 +27,7 @@ const (
 )
 
 const (
+	DEV = "dev"
 	SQL = "sql"
 )
 
@@ -46,12 +47,19 @@ func main() {
 	sql.SetValue(app.Preferences().Float(SQL))
 	sel := capture.CanvasObject()
 	his := history.CanvasObject()
+	dev := app.Preferences().String(DEV)
+	if dev == "" {
+		sel.SetSelectedIndex(0)
+	} else {
+		sel.SetSelected(dev)
+	}
 	out := container.NewBorder(sel, sql, nil, nil, his)
 	win.Resize(fyne.NewSize(640, 480))
 	win.SetContent(out)
 	win.ShowAndRun()
 	ctx.Uninit()
 	app.Preferences().SetFloat(SQL, sql.Value)
+	app.Preferences().SetString(DEV, sel.Selected)
 	return
 }
 
@@ -105,7 +113,7 @@ func (c *Capture) Run(dev malgo.DeviceInfo) (err error) {
 	return
 }
 
-func (c *Capture) CanvasObject() (ui fyne.CanvasObject) {
+func (c *Capture) CanvasObject() (ui *widget.Select) {
 	devices, _ := c.Context.Devices(malgo.Capture)
 	sel := widget.NewSelect(nil, func(name string) {
 		if c.Capture != nil {
@@ -121,7 +129,6 @@ func (c *Capture) CanvasObject() (ui fyne.CanvasObject) {
 	for _, dev := range devices {
 		sel.Options = append(sel.Options, dev.Name())
 	}
-	sel.SetSelectedIndex(0)
 	return sel
 }
 
