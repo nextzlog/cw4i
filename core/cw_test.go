@@ -21,6 +21,7 @@ func Test(t *testing.T) {
 		Rate: RATE,
 	}
 	decoder := DefaultDecoder(RATE)
+	decoder.Squelch = 0
 	tone := encoder.Tone(TextToCode(TEXT))
 	for _, msg := range decoder.Read(tone) {
 		if CodeToText(msg.Code) == TEXT {

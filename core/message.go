@@ -18,21 +18,6 @@ type Message struct {
 	Miss int
 }
 
-func (m Message) Distinct(thre float64) bool {
-	var tones []float64
-	var mutes []float64
-	for _, step := range m.Body {
-		if step.Class {
-			tones = append(tones, step.Level)
-		} else {
-			mutes = append(mutes, step.Level)
-		}
-	}
-	tone := med64(tones)
-	mute := med64(mutes)
-	return tone > thre*mute
-}
-
 func (m Message) AGC(gain float64) []float64 {
 	seq := make([]float64, len(m.Data))
 	max := max64(m.Data)
