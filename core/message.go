@@ -10,17 +10,27 @@ import "math"
 
 type Message struct {
 	Data []float64
+	Body []Segment
 	Code string
 	Text string
 	Freq int
 	Time int
 	Miss int
-	Tone float64
-	Mute float64
 }
 
 func (m Message) Distinct(thre float64) bool {
-	return m.Tone/m.Mute > thre
+	var tones []float64
+	var mutes []float64
+	for _, step := range m.Body {
+		if step.Class {
+			tones = append(tones, step.Level)
+		} else {
+			mutes = append(mutes, step.Level)
+		}
+	}
+	tone := med64(tones)
+	mute := med64(mutes)
+	return tone > thre*mute
 }
 
 func (m Message) AGC(gain float64) []float64 {

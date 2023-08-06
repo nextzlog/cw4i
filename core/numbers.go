@@ -30,7 +30,11 @@ func med64(x []float64) (med float64) {
 	xs := make([]float64, len(x))
 	copy(xs, x)
 	sort.Float64s(xs)
-	return xs[len(xs)/2]
+	if len(x) > 0 {
+		return xs[len(xs)/2]
+	} else {
+		return 0
+	}
 }
 
 func sum64(x []float64) (sum float64) {

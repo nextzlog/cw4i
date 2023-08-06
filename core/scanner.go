@@ -6,8 +6,6 @@
 
 package core
 
-import "github.com/thoas/go-funk"
-
 type Scanner struct {
 	Iter int
 	Gain float64
@@ -21,28 +19,19 @@ func DefaultScanner() Scanner {
 }
 
 func (s *Scanner) Scan(source Message) Message {
-	align := &Classes{X: source.AGC(s.Gain)}
-	align.Train(2, s.Iter)
-	clips := align.Segments(0)
-	if clips == nil {
-		return source
-	}
-	since := funk.Head(clips).(Segment).Prev
-	until := funk.Last(clips).(Segment).Time
-	level := &Classes{X: align.X[since : until+1]}
+	level := &Classes{X: source.AGC(s.Gain)}
 	level.Train(2, s.Iter)
 	steps := level.Segments(0)
-	tones := make([]float64, 0)
+	var spans []float64
 	for _, s := range steps {
-		if s.Down {
-			tones = append(tones, s.Span)
+		if s.Class {
+			spans = append(spans, s.Width)
 		}
 	}
-	speed := &Classes{X: tones}
+	speed := &Classes{X: spans}
 	speed.Train(2, s.Iter)
+	source.Body = steps
 	source.Code = speed.Code(steps)
 	source.Text = CodeToText(source.Code)
-	source.Tone = max64(level.M)
-	source.Mute = min64(level.M)
 	return source
 }

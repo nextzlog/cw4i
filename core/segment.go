@@ -7,26 +7,27 @@
 package core
 
 type Segment struct {
-	Time int
-	Prev int
-	Down bool
-	Span float64
+	Class bool
+	Since int
+	Until int
+	Width float64
+	Level float64
 }
 
 func (m *Classes) Segments(first int) (result []Segment) {
-	start := 0
-	for n, x := range m.X {
-		k := m.Class(x)
-		if first != k {
+	since := 0
+	for until, value := range m.X {
+		if class := m.Class(value); first != class {
 			result = append(result, Segment{
-				Time: n,
-				Prev: start,
-				Down: k == 0,
-				Span: float64(n - start),
+				Class: first == 1,
+				Since: since,
+				Until: until,
+				Width: float64(until - since),
+				Level: med64(m.X[since:until]),
 			})
-			start = n
+			since = until
+			first = class
 		}
-		first = k
 	}
 	if len(result) > 1 {
 		return result[1:]
@@ -37,15 +38,15 @@ func (m *Classes) Segments(first int) (result []Segment) {
 
 func (m *Classes) Code(segments []Segment) (code string) {
 	for _, s := range segments {
-		if s.Down {
-			switch m.Class(s.Span) {
+		if s.Class {
+			switch m.Class(s.Width) {
 			case 0:
 				code += "."
 			case 1:
 				code += "_"
 			}
 		} else {
-			switch m.Extra(s.Span) {
+			switch m.Extra(s.Width) {
 			case 0:
 				code += ""
 			case 1:
