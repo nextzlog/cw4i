@@ -58,6 +58,7 @@ func main() {
 func Script(rate int) (decoder core.Decoder, err error) {
 	decoder = core.DefaultDecoder(rate)
 	vm := goja.New()
+	vm.Set("call", util.Call)
 	vm.Set("plot", util.Plot)
 	vm.Set("decoder", decoder)
 	code, _ := os.ReadFile("cw4i.js")
