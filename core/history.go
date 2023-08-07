@@ -11,6 +11,10 @@ type History struct {
 	Added func()
 }
 
+func (h *History) Length() (count int) {
+	return len(h.Items)
+}
+
 func (h *History) Add(items []Message) {
 	for _, message := range items {
 		h.add(message)
