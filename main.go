@@ -7,6 +7,7 @@
 package main
 
 import (
+	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -62,6 +63,8 @@ func Script(rate int) (decoder core.Decoder, err error) {
 	vm.Set("call", util.Call)
 	vm.Set("plot", util.Plot)
 	vm.Set("decoder", decoder)
+	vm.Set("printf", fmt.Printf)
+	vm.Set("sprintf", fmt.Sprintf)
 	code, _ := os.ReadFile("cw4i.js")
 	if _, err = vm.RunString(string(code)); err == nil {
 		err = vm.ExportTo(vm.Get("decoder"), &decoder)
