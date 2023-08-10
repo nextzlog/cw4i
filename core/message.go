@@ -16,6 +16,7 @@ type Message struct {
 	Freq int
 	Time int
 	Miss int
+	Hide bool
 }
 
 func (m Message) AGC(gain float64) []float64 {

@@ -17,7 +17,9 @@ func (h *History) Length() (count int) {
 
 func (h *History) Add(items []Message) {
 	for _, message := range items {
-		h.add(message)
+		if !message.Hide {
+			h.add(message)
+		}
 	}
 	if h.Added != nil {
 		h.Added()
