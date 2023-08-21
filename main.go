@@ -44,10 +44,15 @@ func main() {
 		Handler: decoder.Resquelch,
 		Initial: app.Preferences().Float(SQL),
 	}
+	restart := view.Restart{
+		Handler: decoder.Restart,
+	}
 	sel := capture.CanvasObject()
 	his := decoder.CanvasObject()
 	sql := squelch.CanvasObject()
-	out := container.NewBorder(sel, sql, nil, nil, his)
+	btn := restart.CanvasObject()
+	bar := container.NewBorder(nil, nil, nil, btn, sql)
+	out := container.NewBorder(sel, bar, nil, nil, his)
 	win.Resize(fyne.NewSize(640, 480))
 	win.SetContent(out)
 	win.ShowAndRun()

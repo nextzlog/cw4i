@@ -18,9 +18,14 @@ type Decoder struct {
 	History
 }
 
+func (d *Decoder) Restart() {
+	d.Decoder.History = nil
+}
+
 func (d *Decoder) Resquelch(level float64) {
 	d.Squelch = math.Pow(10, level)
 	d.Decoder.Squelch = d.Squelch
+	d.Decoder.History = nil
 }
 
 func (d *Decoder) Update(samplingRate int) {

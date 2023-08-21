@@ -16,14 +16,22 @@ type History struct {
 	core.History
 }
 
+func (h *History) Clear() {
+	h.Items = nil
+	h.Added()
+}
+
 func (h *History) canvas() fyne.CanvasObject {
 	return widget.NewLabel("")
 }
 
 func (h *History) update(id int, obj fyne.CanvasObject) {
-	item := h.Items[len(h.Items)-id-1]
 	label := obj.(*widget.Label)
-	label.SetText(item.Text)
+	if id < len(h.Items) {
+		label.SetText(h.Items[len(h.Items)-id-1].Text)
+	} else {
+		label.SetText("")
+	}
 }
 
 func (h *History) CanvasObject() (ui fyne.CanvasObject) {
