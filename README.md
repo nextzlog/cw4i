@@ -7,12 +7,40 @@ CW4ISR
 
 CW4ISR is a highly programmable Morse Decoder that assists automated amateur radio operations.
 
-## Install
+## Get Started
+
+Download the nightly build [here](https://github.com/nextzlog/cw4i/releases/tag/nightly).
+
+### Windows
+
+Just click `cw4i.exe` to start CW4ISR.
+
+### macOS
+
+You can install `cw4i.app` from `cw4i.dmg`.
+
+## Build
+
+If you have a Go development environment ready, you can install CW4ISR with the following command.
 
 ```sh
 $ go install github.com/nextzlog/cw4i@HEAD
 $ cw4i
 ```
+
+Alternatively, you can build CW4ISR with the command.
+
+```sh
+$ git clone https://github.com/nextzlog/cw4i
+$ cd cw4i
+$ go mod tidy
+$ go build
+$ ./cw4i
+```
+
+## Documents
+
+[GoDoc](https://pkg.go.dev/github.com/nextzlog/cw4i)
 
 ## Event Handler
 
@@ -27,12 +55,6 @@ decoder.Program = function(message) {
 ```
 
 The `Program` function is invoked each time the decoder updates a message, which is an instance of the `Message` structure.
-
-## Build
-
-```sh
-$ go build
-```
 
 ## Contribution
 
