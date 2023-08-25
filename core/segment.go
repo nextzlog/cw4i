@@ -28,8 +28,19 @@ func (m *Classes) Segments(first int) (result []Segment) {
 			since = until
 			first = class
 		}
+
+		if until == len(m.X) -1 && since != until {
+			result = append(result, Segment{
+				Class: first == 1,
+				Since: since,
+				Until: until,
+				Width: float64(until - since),
+				Level: med64(m.X[since:until]),
+			})
+		}
 	}
-	if len(result) > 1 {
+
+	if len(result) > 2 {
 		return result[1:]
 	} else {
 		return nil
