@@ -22,9 +22,6 @@ func init() {
 	for key, value := range forward {
 		reverse[value] = key
 	}
-	for key, value := range forward {
-		reverse[value] = key
-	}
 	reverse[" "] = ""
 	reverse[""] = ""
 }
@@ -41,9 +38,9 @@ func CodeToText(code string) (result string) {
 	if len(code) > 0 {
 		if code[len(code)-1:] != " " {
 			result = result[:len(result)-1]
-		} 
+		}
 	}
-	
+
 	return
 }
 
