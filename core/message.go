@@ -12,6 +12,7 @@ type Message struct {
 	Data []float64
 	Body []Segment
 	Code string
+	Trim string
 	Text string
 	Freq int
 	Time int

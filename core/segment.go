@@ -6,6 +6,8 @@
 
 package core
 
+import "strings"
+
 type Segment struct {
 	Class bool
 	Since int
@@ -16,8 +18,10 @@ type Segment struct {
 
 func (m *Classes) Segments(first int) (result []Segment) {
 	since := 0
+	final := len(m.X) - 1
 	for until, value := range m.X {
-		if class := m.Class(value); first != class {
+		class := m.Class(value)
+		if first != class || until == final {
 			result = append(result, Segment{
 				Class: first == 1,
 				Since: since,
@@ -28,19 +32,9 @@ func (m *Classes) Segments(first int) (result []Segment) {
 			since = until
 			first = class
 		}
-
-		if until == len(m.X) -1 && since != until {
-			result = append(result, Segment{
-				Class: first == 1,
-				Since: since,
-				Until: until,
-				Width: float64(until - since),
-				Level: med64(m.X[since:until]),
-			})
-		}
 	}
 
-	if len(result) > 2 {
+	if len(result) > 1 {
 		return result[1:]
 	} else {
 		return nil
@@ -68,4 +62,8 @@ func (m *Classes) Code(segments []Segment) (code string) {
 		}
 	}
 	return
+}
+
+func (m *Classes) Trim(segments []Segment) (code string) {
+	return strings.TrimRight(m.Code(segments), "._")
 }

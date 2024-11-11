@@ -32,6 +32,7 @@ func (s *Scanner) Scan(source Message) Message {
 	speed.Train(2, s.Iter)
 	source.Body = steps
 	source.Code = speed.Code(steps)
-	source.Text = CodeToText(source.Code)
+	source.Trim = speed.Trim(steps)
+	source.Text = CodeToText(source.Trim)
 	return source
 }

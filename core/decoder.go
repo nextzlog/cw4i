@@ -18,11 +18,11 @@ type Decoder struct {
 	Program func(Message) Message
 }
 
-func DefaultDecoder(Rate int) Decoder {
+func DefaultDecoder(rate int) Decoder {
 	return Decoder{
 		Scatter: 1,
 		MaxMiss: 2,
-		Monitor: DefaultMonitor(Rate),
+		Monitor: DefaultMonitor(rate),
 		Scanner: DefaultScanner(),
 	}
 }
