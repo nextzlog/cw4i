@@ -8,17 +8,6 @@ permissions:
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 jobs:
-  Test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
-      with:
-        go-version: '1.20'
-    - run: |
-        go mod tidy
-        go test
-      working-directory: core
   BuildExe:
     runs-on: windows-latest
     steps:
@@ -42,10 +31,7 @@ jobs:
         go-version: '1.20'
     - run: |
         go mod tidy
-        go build -ldflags='-s -w' -trimpath
-        brew install upx
-        mkdir cw4i.app
-        upx cw4i -o cw4i.app/cw4i
+        go build -ldflags='-s -w' -trimpath -o cw4i.app
         hdiutil create cw4i.dmg -srcfolder cw4i.app
         gh release create nightly || true
         gh release upload nightly cw4i.dmg --clobber

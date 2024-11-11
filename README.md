@@ -4,6 +4,7 @@ CW4ISR
 ![image](https://img.shields.io/badge/Go-1.20-red.svg)
 ![image](https://img.shields.io/badge/license-MIT-darkblue.svg)
 ![badge](https://github.com/nextzlog/cw4i/actions/workflows/build.yaml/badge.svg)
+![badge](https://github.com/nextzlog/cw4i/actions/workflows/clean.yaml/badge.svg)
 
 CW4ISR is a highly programmable Morse Decoder that assists automated amateur radio operations.
 
