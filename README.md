@@ -11,6 +11,7 @@ CW4ISR is a highly programmable Morse Decoder that assists automated amateur rad
 ## Get Started
 
 Download the nightly build [here](https://github.com/nextzlog/cw4i/releases/tag/nightly).
+Some unofficial releases may be available [here](https://github.com/jucky154/cw4i/releases).
 
 ### Windows
 
