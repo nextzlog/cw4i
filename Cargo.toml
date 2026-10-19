@@ -1,0 +1,32 @@
+[package]
+name = "cw4i"
+description = "CW4ISR: a Morse decoder that reads every station in the audio band at once, as a library and an application."
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[features]
+# The standalone application; hosts such as zLog embed the library without it.
+default = ["app"]
+app = ["dep:eframe"]
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "cw4i"
+path = "src/main.rs"
+required-features = ["app"]
+
+[dependencies]
+rumo = { git = "https://github.com/nextzlog/rumo", rev = "248ef29532c79dffb8798f627601fe5de332f253" }
+egui = "0.37"
+cpal = "0.18"
+hound = "3.5"
+rustfft = "6"
+eframe = { version = "0.37", optional = true, features = ["persistence"] }
+
+[profile.release]
+strip = true
+lto = true

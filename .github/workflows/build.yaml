@@ -1,37 +1,61 @@
 name: build
+
 on:
   push:
-    branches:
-    - master
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
 permissions:
   contents: write
+
 env:
-  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
-  BuildExe:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+      - run: cargo fmt --all --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo clippy --no-default-features --all-targets -- -D warnings
+      - run: cargo test
+
+  MacOS:
+    needs: Test
+    if: github.event_name != 'pull_request'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+      - run: cargo build --release --target aarch64-apple-darwin
+      - run: cargo build --release --target x86_64-apple-darwin
+      - run: |
+          scripts/macos-app.sh \
+            target/aarch64-apple-darwin/release/cw4i \
+            target/x86_64-apple-darwin/release/cw4i
+          hdiutil create -volname CW4ISR -srcfolder dist -ov -format UDZO cw4i.dmg
+          gh release create nightly --prerelease --title nightly --notes "Built from master." || true
+          gh release upload nightly cw4i.dmg --clobber
+
+  Windows:
+    needs: Test
+    if: github.event_name != 'pull_request'
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
-      with:
-        go-version: '1.20'
-    - run: |
-        go mod tidy
-        go build -ldflags='-s -w' -trimpath
-        choco install upx
-        upx cw4i.exe
-        gh release create nightly || true
-        gh release upload nightly cw4i.exe --clobber
-  BuildDmg:
-    runs-on: macOS-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
-      with:
-        go-version: '1.20'
-    - run: |
-        go mod tidy
-        go build -ldflags='-s -w' -trimpath -o cw4i.app
-        hdiutil create cw4i.dmg -srcfolder cw4i.app
-        gh release create nightly || true
-        gh release upload nightly cw4i.dmg --clobber
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - run: |
+          copy target\release\cw4i.exe cw4i.exe
+          gh release create nightly --prerelease --title nightly --notes "Built from master." || ver > nul
+          gh release upload nightly cw4i.exe --clobber
+        shell: cmd

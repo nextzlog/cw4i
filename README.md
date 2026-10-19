@@ -1,67 +1,89 @@
 CW4ISR
 ====
 
-![image](https://img.shields.io/badge/Go-1.20-red.svg)
+![image](https://img.shields.io/badge/Rust-2021-red.svg)
 ![image](https://img.shields.io/badge/license-MIT-darkblue.svg)
 ![badge](https://github.com/nextzlog/cw4i/actions/workflows/build.yaml/badge.svg)
-![badge](https://github.com/nextzlog/cw4i/actions/workflows/clean.yaml/badge.svg)
 
-CW4ISR is a highly programmable Morse Decoder that assists automated amateur radio operations.
+CW4ISR is a Morse decoder that reads every station in the audio band at once.
+Decoding is done by [rumo](https://github.com/nextzlog/rumo).
+The Go version is kept in the branch v1.
 
 ## Get Started
 
 Download the nightly build [here](https://github.com/nextzlog/cw4i/releases/tag/nightly).
-Some unofficial releases may be available [here](https://github.com/jucky154/cw4i/releases).
 
 ### Windows
 
-Just click `cw4i.exe` to start CW4ISR.
+Start `cw4i.exe`.
 
 ### macOS
 
-You can install `cw4i.app` from `cw4i.dmg`.
+Install `cw4i.app` from `cw4i.dmg`.
+
+## Library
+
+The crate is also a library, so that a host such as [zlog-rs](https://github.com/nextzlog/zlog-rs) shows the same decoder in its own window.
+
+```mermaid
+flowchart LR
+  subgraph cw4i[cw4i library]
+    P[Cw4i: draw into an egui Ui]
+    S[Stations from rumo events]
+    W[Waterfall]
+    A[Audio input]
+  end
+  P --> S
+  P --> W
+  P --> A
+  S --> R[rumo]
+  P -->|take_picks| H[Host entry row]
+  App[cw4i application] --> P
+  Z[zlog-rs] --> P
+```
+
+| Item | Role |
+|---|---|
+| `Cw4i` | Draws the controls, the waterfall and the lanes, and hands out picked words. |
+| `Pick` | A picked callsign or number. |
+| `Stations` | Stations built from the events of rumo. |
+| `decode` | Decodes a whole recording. |
+
+A host depends on the crate without the application feature.
+
+```toml
+cw4i = { git = "https://github.com/nextzlog/cw4i", default-features = false }
+```
 
 ## Build
 
-If you have a Go development environment ready, you can install CW4ISR with the following command.
+```sh
+$ cargo build --release
+$ ./target/release/cw4i
+```
+
+On macOS, wrap the build into `dist/cw4i.app` with the script below, so that it starts without a terminal window.
 
 ```sh
-$ go install github.com/nextzlog/cw4i@HEAD
-$ cw4i
+$ scripts/macos-app.sh
+$ open dist/cw4i.app
 ```
 
-Alternatively, you can build CW4ISR with the command.
+Given WAV files, the application prints the stations heard without opening a window.
 
 ```sh
-$ git clone https://github.com/nextzlog/cw4i
-$ cd cw4i
-$ go mod tidy
-$ go build
-$ ./cw4i
+$ ./target/release/cw4i recording.wav
 ```
 
-## Documents
+## Test
 
-[GoDoc](https://pkg.go.dev/github.com/nextzlog/cw4i)
-
-## Event Handler
-
-Place `cw4i.js` as follows to customize `core.Decoder` with JavaScript (ES5).
-
-```js:cw4i.js
-decoder.Program = function(message) {
-  message.Text = message.Text.replace('5NN', '599');
-  message.Text = message.Text.replace('ENN', '599');
-  return message;
-}
+```sh
+$ cargo test
 ```
-
-The `Program` function is invoked each time the decoder updates a message, which is an instance of the `Message` structure.
 
 ## Contribution
 
 Feel free to make issues at [nextzlog/todo](https://github.com/nextzlog/todo).
-Follow [@nextzlog](https://twitter.com/nextzlog) on Twitter.
 
 ## License
 

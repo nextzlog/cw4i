@@ -1,5 +1,2 @@
-.*
-cw4i
-go.sum
-!.github
-!.gitignore
+/target
+/dist
