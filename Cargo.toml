@@ -1,0 +1,30 @@
+[workspace]
+members = ["lib", "ui"]
+exclude = ["tools"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/nextzlog/cw4i"
+
+[workspace.dependencies]
+cw4i = { path = "lib" }
+egui = "0.37"
+cpal = "0.18"
+hound = "3.5"
+rustfft = "6"
+eframe = { version = "0.37", features = ["persistence"] }
+rfd = "0.17"
+egui_kittest = "0.37"
+egui_system_font_provider = "0.37"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.test]
+opt-level = 3
