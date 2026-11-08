@@ -1,0 +1,17 @@
+[package]
+name = "cw4i"
+description = "Streaming Morse decoder that reads every station in the audio band at once."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[features]
+default = ["tcn-gate"]
+# Station-presence gate on committed text (network in src/gate.rs).
+tcn-gate = []
+
+[dev-dependencies]
+hound.workspace = true
+rustfft.workspace = true

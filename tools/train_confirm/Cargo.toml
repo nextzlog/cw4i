@@ -1,0 +1,12 @@
+[package]
+name = "train_confirm"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[dependencies]
+cw4i = { path = "../../lib" }
+
+[profile.release]
+opt-level = 3

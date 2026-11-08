@@ -1,5 +1,6 @@
 .*
-cw4i
-go.sum
-!.github
+!.github/
 !.gitignore
+/target
+/dist
+Cargo.lock
